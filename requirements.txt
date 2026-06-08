@@ -1,0 +1,16 @@
+# --- Core Hardware & Audio Layer ---
+PyAudio==0.2.14
+webrtcvad==2.0.10
+numpy==2.4.6
+
+# --- Crucial Legacy Build Tool Override ---
+# Mandatory for Python 3.11+ to prevent webrtcvad from throwing ModuleNotFoundError: 'pkg_resources'
+setuptools==69.5.1
+
+# --- Local AI Engines ---
+faster-whisper==1.2.1
+ollama==0.6.2
+
+# --- Text-To-Speech Options (Keep what your speaker.py imports) ---
+edge-tts==7.2.8
+pyttsx3==2.99

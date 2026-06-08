@@ -1,0 +1,43 @@
+# ====================================================================
+# PROJECT-SPECIFIC ARTIFACTS
+# ====================================================================
+# Local voice assistant runtime dependencies and environments
+.venv/
+venv/
+ENV/
+env/
+
+# Live audio diagnostic exports and workspace telemetry
+diagnostics.json
+
+# Text-to-Speech cached temporary audio storage binaries
+*.mp3
+*.wav
+
+# ====================================================================
+# PYTHON INTERPRETER CACHES & COMPILED BINARIES
+# ====================================================================
+# Bytecode cache directories generated across Python 3.11/3.14 runs
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Python distribution and packaging files
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# ====================================================================
+# IDE, EDITORS, AND OS METADATA
+# ====================================================================
+# Visual Studio Code workspace settings and directory states
+.vscode/
+
+# IntelliJ / PyCharm workspace setups
+.idea/
+
+# Linux desktop file attributes and thumbnail cache files
+.DS_Store
+Thumbs.db

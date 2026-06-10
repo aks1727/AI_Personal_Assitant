@@ -1,12 +1,3 @@
-# core/listener.py
-#
-# ARCHITECTURE:
-#   - Stream opens ONCE at __init__ and stays open (no per-call open/close overhead)
-#   - Standby loop runs continuously, processing tiny 30ms chunks via diff+zscore
-#   - Trigger threshold: 2 consecutive speech frames (was 9) → ~60ms latency to open
-#   - Silence gate: 8 frames (240ms) of quiet closes recording (was 450ms)
-#   - Cross-platform: PyAudio error suppression is OS-aware (no Linux-only assumptions)
-
 import sys
 import os
 import pyaudio
@@ -23,6 +14,7 @@ from utils.constants import Settings
 # ---------------------------------------------------------------------------
 
 from contextlib import contextmanager
+
 
 @contextmanager
 def suppress_audio_errors():
@@ -50,36 +42,36 @@ def suppress_audio_errors():
 # SpeechListener
 # ---------------------------------------------------------------------------
 
-class SpeechListener:
 
+class SpeechListener:
     # ------------------------------------------------------------------
     # Audio constants
     # ------------------------------------------------------------------
-    FORMAT   = pyaudio.paInt16
+    FORMAT = pyaudio.paInt16
     CHANNELS = 1
-    RATE     = 16000
-    CHUNK    = 480          # 30 ms per frame  (16000 × 0.030)
+    RATE = 16000
+    CHUNK = 480  # 30 ms per frame  (16000 × 0.030)
 
     # ------------------------------------------------------------------
     # VAD tuning  ← all latency-sensitive knobs live here
     # ------------------------------------------------------------------
-    CALIB_WARMUP_FRAMES  = 5    # throwaway frames at stream open
-    CALIB_SAMPLE_FRAMES  = 40   # frames used to build noise profile
+    CALIB_WARMUP_FRAMES = 5  # throwaway frames at stream open
+    CALIB_SAMPLE_FRAMES = 40  # frames used to build noise profile
 
-    TRIGGER_SIGMA        = 4.0  # z-score multiple to OPEN mic
-    SUSTAIN_SIGMA        = 1.0  # z-score multiple to KEEP mic open
+    TRIGGER_SIGMA = 4.0  # z-score multiple to OPEN mic
+    SUSTAIN_SIGMA = 1.0  # z-score multiple to KEEP mic open
 
     # Trigger: need this many consecutive speech frames to confirm voice
     # 2 frames = 60 ms  (was effectively 9 frames / 270 ms)
-    TRIGGER_CONSECUTIVE  = 2
+    TRIGGER_CONSECUTIVE = 2
 
     # Silence: close mic after this many silent frames
     # 8 frames = 240 ms  (was 15 frames / 450 ms)
-    SILENCE_LIMIT        = 8
+    SILENCE_LIMIT = 8
 
     # Pre-roll: frames kept in ring buffer prepended to recording
     # Captures the very start of the utterance that fired the trigger
-    PREROLL_FRAMES       = 4    # 120 ms look-back
+    PREROLL_FRAMES = 4  # 120 ms look-back
 
     def __init__(self):
         print("[Acoustic Module] Booting Dynamic Statistical VAD...")
@@ -148,7 +140,7 @@ class SpeechListener:
         calib_stream.close()
 
         self.HF_MEAN = float(np.mean(hf_samples)) if hf_samples else 100.0
-        self.HF_STD  = float(np.std(hf_samples))  if hf_samples else 10.0
+        self.HF_STD = float(np.std(hf_samples)) if hf_samples else 10.0
 
         self.TRIGGER_GATE = self.HF_MEAN + (self.HF_STD * self.TRIGGER_SIGMA)
         self.SUSTAIN_GATE = self.HF_MEAN + (self.HF_STD * self.SUSTAIN_SIGMA)
@@ -165,10 +157,10 @@ class SpeechListener:
 
     def get_diagnostics(self) -> dict:
         return {
-            "rate":         self.RATE,
-            "chunk":        self.CHUNK,
-            "hf_mean":      round(self.HF_MEAN, 2),
-            "hf_std":       round(self.HF_STD, 2),
+            "rate": self.RATE,
+            "chunk": self.CHUNK,
+            "hf_mean": round(self.HF_MEAN, 2),
+            "hf_std": round(self.HF_STD, 2),
             "trigger_gate": round(self.TRIGGER_GATE, 2),
             "sustain_gate": round(self.SUSTAIN_GATE, 2),
         }
@@ -261,10 +253,12 @@ class SpeechListener:
             else:
                 silence_counter += 1
                 if silence_counter >= self.SILENCE_LIMIT:
-                    break   # natural end of utterance
+                    break  # natural end of utterance
 
         recording_duration = time.time() - recording_start
-        print(f"[Recording closed — {recording_duration:.2f}s captured. Transcribing...]")
+        print(
+            f"[Recording closed — {recording_duration:.2f}s captured. Transcribing...]"
+        )
 
         # ── PHASE 3: GUARD ────────────────────────────────────────────
         # Minimum viable audio: at least 10 frames (~300 ms of real content)
@@ -274,20 +268,20 @@ class SpeechListener:
         # ── PHASE 4: TRANSCRIBE ───────────────────────────────────────
         try:
             raw_audio = b"".join(speech_buffer)
-            audio_np  = (
+            audio_np = (
                 np.frombuffer(raw_audio, dtype=np.int16).astype(np.float32) / 32768.0
             )
 
             # Dynamic triage: shorter speech → fewer beam steps → lower latency
             if recording_duration < 1.2:
                 beam_size = 1
-                tier      = "micro"
+                tier = "micro"
             elif recording_duration < 2.8:
                 beam_size = 2
-                tier      = "conversational"
+                tier = "conversational"
             else:
                 beam_size = 4
-                tier      = "deep"
+                tier = "deep"
 
             # ── PASS 1: LANGUAGE DETECTION ───────────────────────────
             # Detect language from the audio, then constrain to allowed
@@ -301,8 +295,7 @@ class SpeechListener:
             if detected_lang not in ALLOWED_LANGUAGES:
                 # Pick the highest-scoring allowed language instead
                 detected_lang = max(
-                    ALLOWED_LANGUAGES,
-                    key=lambda lang: lang_probs.get(lang, 0.0)
+                    ALLOWED_LANGUAGES, key=lambda lang: lang_probs.get(lang, 0.0)
                 )
                 print(f"[Language constrained → {detected_lang}]")
             else:

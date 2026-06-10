@@ -6,7 +6,6 @@ from utils.constants import Settings
 
 
 class VoiceSpeaker:
-
     def __init__(self, voice_identity: str = Settings.DEFAULT_VOICE):
         self.voice_identity = voice_identity
 
@@ -45,7 +44,8 @@ class VoiceSpeaker:
             "ffplay",
             "-nodisp",
             "-autoexit",
-            "-loglevel", "quiet",
+            "-loglevel",
+            "quiet",
             filepath,
         ]
         try:
@@ -53,7 +53,7 @@ class VoiceSpeaker:
                 cmd,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
-                check=False,    # don't raise on non-zero exit
+                check=False,  # don't raise on non-zero exit
             )
         except FileNotFoundError:
             print("[Speaker] ffplay not found. Install ffmpeg and ensure it's on PATH.")
@@ -65,5 +65,5 @@ class VoiceSpeaker:
         try:
             if os.path.exists(Settings.TEMP_AUDIO_MP3):
                 os.remove(Settings.TEMP_AUDIO_MP3)
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"[DEBUG] {e}")

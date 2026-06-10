@@ -1,44 +1,162 @@
 # ====================================================================
-# PROJECT-SPECIFIC ARTIFACTS
+
+# VIRTUAL ENVIRONMENTS
+
 # ====================================================================
-# Local voice assistant runtime dependencies and environments
+
 .venv/
 venv/
-ENV/
 env/
+ENV/
+.github
+# ====================================================================
 
-# Live audio diagnostic exports and workspace telemetry
-diagnostics.json
-
-# Text-to-Speech cached temporary audio storage binaries
-*.mp3
-*.wav
+# PYTHON CACHE & COMPILED FILES
 
 # ====================================================================
-# PYTHON INTERPRETER CACHES & COMPILED BINARIES
-# ====================================================================
-# Bytecode cache directories generated across Python 3.11/3.14 runs
-**/__pycache__/
-*.pyc
-*.pyo
-*.pyd
 
-# Python distribution and packaging files
-*.egg-info/
-.eggs/
-dist/
+**pycache**/
+**/**pycache**/
+*.py[cod]
+*$py.class
+
+# ====================================================================
+
+# BUILD / PACKAGING
+
+# ====================================================================
+
 build/
+dist/
+downloads/
+eggs/
+.eggs/
+*.egg-info/
+*.egg
+pip-wheel-metadata/
 
 # ====================================================================
-# IDE, EDITORS, AND OS METADATA
+
+# TESTING & COVERAGE
+
 # ====================================================================
-# Visual Studio Code workspace settings and directory states
+
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# ====================================================================
+
+# TYPE CHECKING
+
+# ====================================================================
+
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ====================================================================
+
+# RUFF
+
+# ====================================================================
+
+.ruff_cache/
+
+# ====================================================================
+
+# JUPYTER
+
+# ====================================================================
+
+.ipynb_checkpoints/
+
+# ====================================================================
+
+# IDE / EDITORS
+
+# ====================================================================
+
 .vscode/
-
-# IntelliJ / PyCharm workspace setups
 .idea/
+*.swp
+*.swo
 
-# Linux desktop file attributes and thumbnail cache files
+# ====================================================================
+
+# OPERATING SYSTEM FILES
+
+# ====================================================================
+
 .DS_Store
 Thumbs.db
+
+# ====================================================================
+
+# PROJECT-SPECIFIC ARTIFACTS
+
+# ====================================================================
+
+# Runtime diagnostics
+
+diagnostics.json
+
+# Audio outputs
+
+*.wav
+*.mp3
+
+# Logs
+
+*.log
+
+# Temporary files
+
+tmp/
+temp/
+*.tmp
+
+# ====================================================================
+
+# ENVIRONMENT VARIABLES & SECRETS
+
+# ====================================================================
+
+.env
+.env.*
+!.env.example
+
+# ====================================================================
+
+# GITHUB ACTIONS
+
+# ====================================================================
+
+# Keep workflows tracked
+
+!.github/
+
+# Ignore local action testing tools if ever used
+
+.act/
+
+# ====================================================================
+
+# PYTHON TOOLING
+
+# ====================================================================
+
+.pyre/
+.pytype/
+.tox/
+.nox/
+
+# ====================================================================
+
+# MISC
+
+# ====================================================================
+
 tempCodeRunnerFile.py

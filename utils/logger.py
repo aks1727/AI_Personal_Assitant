@@ -1,6 +1,7 @@
 import os
 from contextlib import contextmanager
 
+
 @contextmanager
 def silence_alsa_errors():
     """Surgically blocks low-level C stderr outputs (ALSA/JACK) while keeping Python errors active."""
@@ -8,7 +9,7 @@ def silence_alsa_errors():
     devnull = os.open(os.devnull, os.O_WRONLY)
     # Duplicate standard error file descriptor to restore it later
     old_stderr = os.dup(2)
-    
+
     try:
         # Redirect raw hardware driver stderr to devnull
         os.dup2(devnull, 2)

@@ -32,18 +32,22 @@ def run_system_diagnostics(voice: VoiceSpeaker, ears: SpeechListener):
         if diag["hf_mean"] <= 0.0:
             raise ValueError("Microphone channel returned flatline zero vectors.")
 
-        print(f"[Hardware Pass] Acoustic pipeline verified. Wind Mean: {int(diag['hf_mean'])}")
-        print(f"[Auto-Tuning]   Trigger: {int(diag['trigger_gate'])} | Sustain: {int(diag['sustain_gate'])}")
+        print(
+            f"[Hardware Pass] Acoustic pipeline verified. Wind Mean: {int(diag['hf_mean'])}"
+        )
+        print(
+            f"[Auto-Tuning]   Trigger: {int(diag['trigger_gate'])} | Sustain: {int(diag['sustain_gate'])}"
+        )
 
         telemetry_payload = {
             "status": "Online",
             "timestamp": time.time(),
             "os_environment": sys.platform,
             "audio": {
-                "sample_rate":          diag["rate"],
-                "frame_chunk":          diag["chunk"],
-                "hf_noise_mean":        int(diag["hf_mean"]),
-                "hf_noise_std_dev":     int(diag["hf_std"]),
+                "sample_rate": diag["rate"],
+                "frame_chunk": diag["chunk"],
+                "hf_noise_mean": int(diag["hf_mean"]),
+                "hf_noise_std_dev": int(diag["hf_std"]),
                 "dynamic_trigger_gate": int(diag["trigger_gate"]),
                 "dynamic_sustain_gate": int(diag["sustain_gate"]),
             },
@@ -54,11 +58,15 @@ def run_system_diagnostics(voice: VoiceSpeaker, ears: SpeechListener):
         }
 
         export_telemetry(telemetry_payload)
-        voice.speak("Audio environment checks are complete. Acoustic channels are balanced.")
+        voice.speak(
+            "Audio environment checks are complete. Acoustic channels are balanced."
+        )
 
     except Exception as e:
         print(f"\n[CRITICAL INITIALIZATION ANOMALY]: {e}")
-        voice.speak("Warning, sir. Audio engine layers failed a critical hardware interface handshake.")
+        voice.speak(
+            "Warning, sir. Audio engine layers failed a critical hardware interface handshake."
+        )
         export_telemetry({"status": "Offline", "error": str(e)})
         sys.exit(1)
 
@@ -68,7 +76,7 @@ def run_system_diagnostics(voice: VoiceSpeaker, ears: SpeechListener):
 
 def main():
     voice = VoiceSpeaker()
-    ears  = SpeechListener()
+    ears = SpeechListener()
     brain = AssistantBrain()
 
     run_system_diagnostics(voice, ears)
@@ -86,7 +94,9 @@ def main():
                 ears.shutdown()
                 break
 
-            reply, reply_lang = brain.generate_response(query, complexity_tier, detected_lang)
+            reply, reply_lang = brain.generate_response(
+                query, complexity_tier, detected_lang
+            )
             voice.speak(reply)
 
         except KeyboardInterrupt:

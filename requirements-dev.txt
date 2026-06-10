@@ -1,0 +1,16 @@
+ruff
+pytest
+mypy
+bandit
+pip-audit
+
+
+#python -m compileall .
+#ruff check .
+#autofix ruff check . --fix
+#ruff format --check .
+#ruff format .
+#bandit -r .
+#pip-audit
+#pytest
+#pytest -v

@@ -1,5 +1,3 @@
-# core/executor.py
-import os
 import platform
 import subprocess
 import webbrowser
@@ -48,7 +46,7 @@ class SystemExecutor:
                         for cmd in commands:
                             try:
                                 subprocess.Popen([cmd], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                                return f"Launching system console panel immediately, sir."
+                                return "Launching system console panel immediately, sir."
                             except FileNotFoundError:
                                 continue
                     else:

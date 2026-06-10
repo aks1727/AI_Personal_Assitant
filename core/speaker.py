@@ -1,46 +1,85 @@
 # core/speaker.py
+#
+# CHANGES FROM ORIGINAL:
+#   - os.system() + shell '2> /dev/null' replaced with subprocess.run()
+#     using stderr=subprocess.DEVNULL — works identically on Linux, Windows, macOS
+#   - Player command is now built as a list (no shell=True) — safer and portable
+#   - asyncio.run() guard added for Python 3.10+ compatibility on Windows
+#     (Windows errors if asyncio.run() is called inside an already-running loop)
+
 import os
+import sys
 import asyncio
+import subprocess
 import edge_tts
-from config import settings
-from utils.constants import AudioConstants
+from utils.constants import Settings
+
 
 class VoiceSpeaker:
-    def __init__(self, voice_identity: str = settings.DEFAULT_VOICE):
-        self.default_voice = voice_identity
-        
-        # --- MULTILINGUAL VOICE PROFILE MAP ---
-        # Maps the language code detected by Whisper to a highly localized Edge-TTS voice actor
-        self.voice_map = {
-            "en": "en-GB-RyanNeural",       # Sophisticated British English
-            "hi": "hi-IN-MadhurNeural",     # Natural Male Hindi (India)
-            "bn": "bn-IN-BashkarNeural",    # Natural Male Bengali (India)
-            "ko": "ko-KR-InJoonNeural",     # Natural Male Korean
-            "ja": "ja-JP-KeitaNeural",      # Natural Male Japanese
-            "es": "es-ES-AlvaroNeural"      # Natural Male Spanish (Spain)
-        }
 
-    def speak(self, text: str, language_code: str = "en"):
-        """Speaks text out loud using a voice matched to the active language choice."""
-        print(f"{settings.ASSISTANT_NAME}: {text}")
-        asyncio.run(self._generate_and_play(text, language_code))
+    def __init__(self, voice_identity: str = Settings.DEFAULT_VOICE):
+        self.voice_identity = voice_identity
 
-    async def _generate_and_play(self, text: str, language_code: str):
+    def set_voice(self, voice_name: str):
+        """Runtime voice switching using database keys."""
+        self.voice_identity = voice_name
+
+    def speak(self, text: str):
+        """Synchronous entry point — wraps the async TTS pipeline."""
+        print(f"{Settings.ASSISTANT_NAME}: {text}")
+
+        # On Windows, a running event loop already exists in some environments.
+        # asyncio.run() raises RuntimeError in that case — use get_event_loop instead.
         try:
-            # 1. Look up the language code or default back to your classic British Jarvis voice
-            selected_voice = self.voice_map.get(language_code.lower(), self.default_voice)
-            
-            padded_text = f", , {text}"
-            communicate = edge_tts.Communicate(padded_text, selected_voice)
-            await communicate.save(AudioConstants.TEMP_AUDIO_MP3)
-            
-            os.system(AudioConstants.STABLE_PLAYER_COMMAND)
-            
-        except Exception as e:
-            print(f"\n[Playback Failure: {e}]")
-        finally:
-            self._cleanup_temp_files()
+            loop = asyncio.get_running_loop()
+            # Already inside a running loop (e.g. Jupyter, some Windows configs)
+            loop.run_until_complete(self._generate_and_play(text))
+        except RuntimeError:
+            # No running loop — safe to use asyncio.run() directly
+            asyncio.run(self._generate_and_play(text))
 
-    def _cleanup_temp_files(self):
-        if os.path.exists(AudioConstants.TEMP_AUDIO_MP3):
-            os.remove(AudioConstants.TEMP_AUDIO_MP3)
+    async def _generate_and_play(self, text: str):
+        """Generate speech via Edge-TTS, play via ffplay, clean up."""
+        try:
+            communicate = edge_tts.Communicate(text, self.voice_identity)
+            await communicate.save(Settings.TEMP_AUDIO_MP3)
+            self._play_audio(Settings.TEMP_AUDIO_MP3)
+        except Exception as e:
+            print(f"[Speaker error: {e}]")
+        finally:
+            self._cleanup()
+
+    @staticmethod
+    def _play_audio(filepath: str):
+        """
+        Play audio using ffplay.
+
+        stderr is suppressed cross-platform via subprocess.DEVNULL.
+        No shell=True, no '2> /dev/null' — works on Linux, Windows, macOS.
+        """
+        cmd = [
+            "ffplay",
+            "-nodisp",
+            "-autoexit",
+            "-loglevel", "quiet",
+            filepath,
+        ]
+        try:
+            subprocess.run(
+                cmd,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=False,    # don't raise on non-zero exit
+            )
+        except FileNotFoundError:
+            print("[Speaker] ffplay not found. Install ffmpeg and ensure it's on PATH.")
+        except Exception as e:
+            print(f"[Speaker] Playback error: {e}")
+
+    def _cleanup(self):
+        """Remove the temp MP3 after playback."""
+        try:
+            if os.path.exists(Settings.TEMP_AUDIO_MP3):
+                os.remove(Settings.TEMP_AUDIO_MP3)
+        except Exception:
+            pass

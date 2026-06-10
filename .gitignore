@@ -41,3 +41,4 @@ build/
 # Linux desktop file attributes and thumbnail cache files
 .DS_Store
 Thumbs.db
+tempCodeRunnerFile.py

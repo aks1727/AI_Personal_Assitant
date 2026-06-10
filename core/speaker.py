@@ -1,14 +1,4 @@
-# core/speaker.py
-#
-# CHANGES FROM ORIGINAL:
-#   - os.system() + shell '2> /dev/null' replaced with subprocess.run()
-#     using stderr=subprocess.DEVNULL — works identically on Linux, Windows, macOS
-#   - Player command is now built as a list (no shell=True) — safer and portable
-#   - asyncio.run() guard added for Python 3.10+ compatibility on Windows
-#     (Windows errors if asyncio.run() is called inside an already-running loop)
-
 import os
-import sys
 import asyncio
 import subprocess
 import edge_tts
@@ -51,12 +41,6 @@ class VoiceSpeaker:
 
     @staticmethod
     def _play_audio(filepath: str):
-        """
-        Play audio using ffplay.
-
-        stderr is suppressed cross-platform via subprocess.DEVNULL.
-        No shell=True, no '2> /dev/null' — works on Linux, Windows, macOS.
-        """
         cmd = [
             "ffplay",
             "-nodisp",

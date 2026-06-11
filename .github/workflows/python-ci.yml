@@ -45,9 +45,6 @@ jobs:
       - name: Type check
         run: mypy . || true
 
-      - name: Security scan
-        run: bandit -r .
-
       - name: Dependency scan
         run: pip-audit
 

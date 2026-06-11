@@ -2,6 +2,14 @@
 import pyaudio
 import numpy as np
 import time
+import os
+import pytest
+
+if os.getenv("CI"):
+    pytest.skip(
+        "Audio hardware unavailable in CI",
+        allow_module_level=True,
+    )
 
 FORMAT = pyaudio.paInt16
 CHANNELS = 1

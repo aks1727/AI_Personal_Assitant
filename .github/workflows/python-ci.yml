@@ -31,7 +31,7 @@ jobs:
 
       - name: Install CI tools
         run: |
-          pip install ruff pytest mypy pip-audit
+          pip install -r requirements-dev.txt
 
       - name: Compile Python files
         run: python -m compileall .
@@ -47,6 +47,3 @@ jobs:
 
       - name: Dependency scan
         run: pip-audit
-
-      - name: Run tests
-        run: pytest

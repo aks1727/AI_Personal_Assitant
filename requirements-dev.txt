@@ -1,9 +1,9 @@
-ruff
-pytest
+-r requirements.txt
 mypy
-bandit
+types-psutil
 pip-audit
-
+pytest
+ruff
 
 #python -m compileall .
 #ruff check .

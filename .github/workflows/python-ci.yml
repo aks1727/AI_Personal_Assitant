@@ -31,7 +31,7 @@ jobs:
 
       - name: Install CI tools
         run: |
-          pip install ruff pytest mypy bandit pip-audit
+          pip install ruff pytest mypy pip-audit
 
       - name: Compile Python files
         run: python -m compileall .

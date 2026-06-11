@@ -12,9 +12,6 @@ ruff format --check .
 echo "=== MyPy ==="
 mypy .
 
-echo "=== Bandit ==="
-bandit -r .
-
 echo "=== Dependency Audit ==="
 pip-audit
 

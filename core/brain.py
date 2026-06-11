@@ -1,6 +1,7 @@
 import ollama
 from utils.constants import Settings
 
+
 class AssistantBrain:
     def __init__(self):
         self.model_name = "llama3.2"
